@@ -6,25 +6,26 @@
 <title>Placemat: Benodigde formatie verlagen tot binnen budget</title>
 <style>
   :root {
-    --bg: #f4f2ec;
+    --bg: #f5f7f8;
     --surface: #ffffff;
-    --ink: #23211c;
-    --ink-soft: #5b574d;
-    --ink-faint: #8a8576;
-    --line: #ddd8cb;
-    --c1: #2f6db0;  /* lesvraag - blauw */
-    --c1-bg: #e8f0f9;
-    --c1-line: #b9d2ec;
-    --c2: #1d7a5e;  /* taakuren - teal */
-    --c2-bg: #e4f2ec;
-    --c2-line: #b3ddcc;
-    --c3: #b06d18;  /* werk beleggen - amber */
-    --c3-bg: #f8efdf;
-    --c3-line: #ecd5ab;
-    --c4: #6a55b3;  /* administratief - paars */
-    --c4-bg: #eeebf7;
-    --c4-line: #cfc6ec;
-    --shadow: 0 1px 3px rgba(40,36,28,.08), 0 6px 24px rgba(40,36,28,.06);
+    --ink: #16242c;
+    --ink-soft: #4a5a63;
+    --ink-faint: #899aa3;
+    --line: #dde4e7;
+    --c1: #0e435e;  /* lesvraag - donkerblauw (hoofdkleur) */
+    --c1-bg: #e4edf2;
+    --c1-line: #b8cdd8;
+    --c2: #138a83;  /* taakuren - turquoise (donkere leesbare variant van 30D5CE) */
+    --c2-bg: #e0f4f2;
+    --c2-line: #a9e0db;
+    --c3: #5f9b19;  /* werk beleggen - groen (accent) */
+    --c3-bg: #eef4e2;
+    --c3-line: #cfe0ab;
+    --c4: #54707e;  /* administratief - neutraal blauwgrijs */
+    --c4-bg: #eaeef0;
+    --c4-line: #c5d0d5;
+    --accent: #5f9b19;
+    --shadow: 0 1px 3px rgba(14,67,94,.08), 0 6px 24px rgba(14,67,94,.07);
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body {
@@ -41,7 +42,7 @@
     text-align: center;
     padding: 40px 24px 28px;
     border-bottom: 1px solid var(--line);
-    background: linear-gradient(180deg, #faf8f3 0%, var(--bg) 100%);
+    background: linear-gradient(180deg, #eaf0f3 0%, var(--bg) 100%);
   }
   .eyebrow {
     font-family: "Helvetica Neue", Arial, sans-serif;
@@ -72,8 +73,9 @@
     margin: 40px 0 0;
   }
   .root-node {
-    background: #efece4;
-    border: 1px solid var(--line);
+    background: var(--c1);
+    border: 1px solid var(--c1);
+    border-bottom: 3px solid var(--accent);
     border-radius: 12px;
     padding: 14px 22px;
     text-align: center;
@@ -83,12 +85,12 @@
   .root-title {
     font-size: 18px;
     font-weight: 600;
-    color: var(--ink);
+    color: #ffffff;
   }
   .root-sub {
     font-family: "Helvetica Neue", Arial, sans-serif;
     font-size: 12px;
-    color: var(--ink-faint);
+    color: #b9cdd8;
     margin-top: 2px;
   }
   .connectors {
