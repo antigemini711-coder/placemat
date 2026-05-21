@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Placemat: Benodigde formatie verlagen tot binnen budget</title>
+<style>
+  :root {
+    --bg: #f4f2ec;
+    --surface: #ffffff;
+    --ink: #23211c;
+    --ink-soft: #5b574d;
+    --ink-faint: #8a8576;
+    --line: #ddd8cb;
+    --c1: #2f6db0;  /* lesvraag - blauw */
+    --c1-bg: #e8f0f9;
+    --c1-line: #b9d2ec;
+    --c2: #1d7a5e;  /* taakuren - teal */
+    --c2-bg: #e4f2ec;
+    --c2-line: #b3ddcc;
+    --c3: #b06d18;  /* werk beleggen - amber */
+    --c3-bg: #f8efdf;
+    --c3-line: #ecd5ab;
+    --c4: #6a55b3;  /* administratief - paars */
+    --c4-bg: #eeebf7;
+    --c4-line: #cfc6ec;
+    --shadow: 0 1px 3px rgba(40,36,28,.08), 0 6px 24px rgba(40,36,28,.06);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
+    background: var(--bg);
+    color: var(--ink);
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+    padding: 0 0 60px;
+  }
+  .sr-only { position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); border:0; }
+
+  header {
+    text-align: center;
+    padding: 40px 24px 28px;
+    border-bottom: 1px solid var(--line);
+    background: linear-gradient(180deg, #faf8f3 0%, var(--bg) 100%);
+  }
+  .eyebrow {
+    font-family: "Helvetica Neue", Arial, sans-serif;
+    font-size: 11px;
+    letter-spacing: .18em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    margin-bottom: 12px;
+  }
+  header h1 {
+    font-size: 30px;
+    font-weight: 600;
+    letter-spacing: -.01em;
+    max-width: 760px;
+    margin: 0 auto;
+  }
+  header p {
+    font-family: "Helvetica Neue", Arial, sans-serif;
+    font-size: 14px;
+    color: var(--ink-soft);
+    max-width: 600px;
+    margin: 14px auto 0;
+  }
+
+  .wrap { max-width: 1180px; margin: 0 auto; padding: 0 24px; }
+
+  .tree-top {
+    margin: 40px 0 0;
+  }
+  .root-node {
+    background: #efece4;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 14px 22px;
+    text-align: center;
+    width: 300px;
+    margin: 0 auto;
+  }
+  .root-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--ink);
+  }
+  .root-sub {
+    font-family: "Helvetica Neue", Arial, sans-serif;
+    font-size: 12px;
+    color: var(--ink-faint);
+    margin-top: 2px;
+  }
+  .connectors {
+    display: block;
+    width: 100%;
+    height: 40px;
+  }
+  @media (max-width: 920px) { .connectors { display: none; } }
+
+  .axis-note {
+    text-align: center;
+    font-family: "Helvetica Neue", Arial, sans-serif;
+    font-size: 12.5px;
+    color: var(--ink-soft);
+    max-width: 720px;
+    margin: 8px auto 0;
+  }
+
+  .board {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 18px;
+    margin-top: 0;
+  }
+  @media (max-width: 920px) { .board { grid-template-columns: repeat(2, 1fr); } }
+  @media (max-width: 560px) { .board { grid-template-columns: 1fr; } }
+
+  .cluster { display: flex; flex-direction: column; }
+  .cluster-head {
+    border-radius: 12px;
+    padding: 14px 16px;
+    margin-bottom: 14px;
+    border: 1px solid;
+  }
+  .cluster-head h2 {
+    font-size: 18px;
+    font-weight: 600;
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+  }
+  .cluster-head .num {
+    font-family: "Helvetica Neue", Arial, sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    opacity: .65;
+  }
+  .cluster-head .sub {
+    font-family: "Helvetica Neue", Arial, sans-serif;
+    font-size: 12.5px;
+    margin-top: 2px;
+  }
+  .cluster-head .count {
+    font-family: "Helvetica Neue", Arial, sans-serif;
+    font-size: 11px;
+    letter-spacing: .04em;
+    text-transform: uppercase;
+    margin-top: 8px;
+    opacity: .7;
+  }
+  .c1 .cluster-head { background: var(--c1-bg); border-color: var(--c1-line); }
+  .c1 .cluster-head h2, .c1 .cluster-head .sub { color: var(--c1); }
+  .c2 .cluster-head { background: var(--c2-bg); border-color: var(--c2-line); }
+  .c2 .cluster-head h2, .c2 .cluster-head .sub { color: var(--c2); }
+  .c3 .cluster-head { background: var(--c3-bg); border-color: var(--c3-line); }
+  .c3 .cluster-head h2, .c3 .cluster-head .sub { color: var(--c3); }
+  .c4 .cluster-head { background: var(--c4-bg); border-color: var(--c4-line); }
+  .c4 .cluster-head h2, .c4 .cluster-head .sub { color: var(--c4); }
+
+  .measures { display: flex; flex-direction: column; gap: 10px; }
+  .measure {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-left: 3px solid var(--line);
+    border-radius: 9px;
+    padding: 12px 14px;
+    cursor: pointer;
+    text-align: left;
+    width: 100%;
+    font-family: inherit;
+    color: var(--ink);
+    transition: transform .12s ease, box-shadow .12s ease, border-color .12s ease;
+  }
+  .measure:hover, .measure:focus-visible {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow);
+    outline: none;
+  }
+  .c1 .measure { border-left-color: var(--c1); }
+  .c2 .measure { border-left-color: var(--c2); }
+  .c3 .measure { border-left-color: var(--c3); }
+  .c4 .measure { border-left-color: var(--c4); }
+  .measure .m-title {
+    font-size: 15.5px;
+    font-weight: 600;
+    display: flex;
+    gap: 7px;
+    align-items: baseline;
+  }
+  .measure .m-num {
+    font-family: "Helvetica Neue", Arial, sans-serif;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--ink-faint);
+    min-width: 20px;
+  }
+  .measure .m-sub {
+    font-family: "Helvetica Neue", Arial, sans-serif;
+    font-size: 12px;
+    color: var(--ink-soft);
+    margin-top: 3px;
+    margin-left: 27px;
+  }
+  .measure .m-code {
+    font-family: "SF Mono", "Consolas", monospace;
+    font-size: 10.5px;
+    color: var(--ink-faint);
+    margin-top: 6px;
+    margin-left: 27px;
+  }
+
+  .hint {
+    text-align: center;
+    font-family: "Helvetica Neue", Arial, sans-serif;
+    font-size: 13px;
+    color: var(--ink-faint);
+    margin-top: 30px;
+  }
+
+  .legend {
+    margin-top: 44px;
+    padding-top: 26px;
+    border-top: 1px solid var(--line);
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 18px;
+    font-family: "Helvetica Neue", Arial, sans-serif;
+  }
+  @media (max-width: 920px) { .legend { grid-template-columns: repeat(2, 1fr); } }
+  @media (max-width: 560px) { .legend { grid-template-columns: 1fr; } }
+  .legend div { font-size: 12.5px; color: var(--ink-soft); }
+  .legend strong { display: block; font-size: 13px; margin-bottom: 4px; color: var(--ink); }
+  .lg1 strong { color: var(--c1); }
+  .lg2 strong { color: var(--c2); }
+  .lg3 strong { color: var(--c3); }
+  .lg4 strong { color: var(--c4); }
+
+  /* Detail overlay */
+  .overlay {
+    position: fixed; inset: 0;
+    background: rgba(35,33,28,.45);
+    display: none;
+    align-items: flex-start;
+    justify-content: center;
+    padding: 40px 20px;
+    overflow-y: auto;
+    z-index: 50;
+  }
+  .overlay.open { display: flex; }
+  .panel {
+    background: var(--surface);
+    border-radius: 16px;
+    max-width: 640px;
+    width: 100%;
+    box-shadow: 0 10px 50px rgba(0,0,0,.25);
+    overflow: hidden;
+    animation: rise .22s ease;
+  }
+  @keyframes rise { from { transform: translateY(14px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+  .panel-head {
+    padding: 22px 26px 18px;
+    border-bottom: 1px solid var(--line);
+    position: relative;
+  }
+  .panel-head .p-cluster {
+    font-family: "Helvetica Neue", Arial, sans-serif;
+    font-size: 11px;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    font-weight: 700;
+  }
+  .panel-head h3 {
+    font-size: 23px;
+    font-weight: 600;
+    margin-top: 6px;
+    padding-right: 40px;
+  }
+  .panel-head .p-code {
+    font-family: "SF Mono", "Consolas", monospace;
+    font-size: 12px;
+    color: var(--ink-faint);
+    margin-top: 6px;
+  }
+  .close {
+    position: absolute; top: 18px; right: 20px;
+    width: 30px; height: 30px;
+    border: 1px solid var(--line);
+    background: var(--surface);
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 18px;
+    color: var(--ink-soft);
+    line-height: 1;
+  }
+  .close:hover { background: var(--bg); }
+  .panel-body { padding: 8px 26px 26px; }
+  .field { margin-top: 18px; }
+  .field h4 {
+    font-family: "Helvetica Neue", Arial, sans-serif;
+    font-size: 11px;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    margin-bottom: 6px;
+  }
+  .field p { font-size: 15.5px; color: var(--ink); }
+  .field.calc {
+    background: var(--bg);
+    border-radius: 10px;
+    padding: 14px 16px;
+    margin-top: 18px;
+  }
+  .field.calc p { font-size: 14.5px; color: var(--ink-soft); }
+  .pc1 { color: var(--c1); } .ph1 { border-top: 4px solid var(--c1); }
+  .pc2 { color: var(--c2); } .ph2 { border-top: 4px solid var(--c2); }
+  .pc3 { color: var(--c3); } .ph3 { border-top: 4px solid var(--c3); }
+  .pc4 { color: var(--c4); } .ph4 { border-top: 4px solid var(--c4); }
+</style>
+</head>
+<body>
+<h2 class="sr-only">Interactieve placemat met zestien maatregelen om de benodigde formatie te verlagen, gegroepeerd in vier clusters. Klik op een maatregel voor toelichting.</h2>
+
+<header>
+  <div class="eyebrow">Placemat directiegesprek &middot; SIVOR Formatie</div>
+  <h1>Benodigde formatie verlagen tot binnen budget</h1>
+  <p>Vier aangrijpingspunten, zestien maatregelen. Waar grijp je in, en hoe ingrijpend is het? Tik op een maatregel voor de toelichting en het bijbehorende Foleta-scherm.</p>
+</header>
+
+<div class="wrap">
+  <div class="tree-top">
+    <div class="root-node">
+      <div class="root-title">Vier aangrijpingspunten</div>
+      <div class="root-sub">benodigde formatie verlagen tot binnen budget</div>
+    </div>
+    <svg class="connectors" viewBox="0 0 1000 44" preserveAspectRatio="none" aria-hidden="true">
+      <line x1="500" y1="0" x2="125" y2="44" stroke="#c9c3b4" stroke-width="1.2" vector-effect="non-scaling-stroke"/>
+      <line x1="500" y1="0" x2="375" y2="44" stroke="#c9c3b4" stroke-width="1.2" vector-effect="non-scaling-stroke"/>
+      <line x1="500" y1="0" x2="625" y2="44" stroke="#c9c3b4" stroke-width="1.2" vector-effect="non-scaling-stroke"/>
+      <line x1="500" y1="0" x2="875" y2="44" stroke="#c9c3b4" stroke-width="1.2" vector-effect="non-scaling-stroke"/>
+    </svg>
+  </div>
+
+  <div class="board" id="board"></div>
+
+  <p class="hint">Tik op een maatregel voor meer informatie</p>
+
+  <p class="axis-note">Van links (raakt het onderwijs) naar rechts (alleen de telling), van parameter aanpassen naar organisatorisch herontwerpen.</p>
+
+  <div class="legend">
+    <div class="lg1"><strong>Lesvraag</strong>Minder of anders les laten geven: groepsgrootte, lessentabel, contactvormen.</div>
+    <div class="lg2"><strong>Taakuren</strong>Lagere opslag of minder uren voor taken naast het lesgeven.</div>
+    <div class="lg3"><strong>Werk beleggen</strong>Goedkopere of niet-formatieve handen op het werk zetten.</div>
+    <div class="lg4"><strong>Administratief</strong>Parameters of registratie aanpassen zonder feitelijk werk te wijzigen.</div>
+  </div>
+</div>
+
+<div class="overlay" id="overlay" role="dialog" aria-modal="true" aria-labelledby="p-title">
+  <div class="panel" id="panel"></div>
+</div>
+
+<script>
+const CLUSTERS = [
+  { id:1, name:"Lesvraag", sub:"minder of anders lesgeven", count:"vier maatregelen" },
+  { id:2, name:"Taakuren", sub:"opslag en taken", count:"zes maatregelen" },
+  { id:3, name:"Werk beleggen", sub:"wie doet het werk", count:"vier maatregelen" },
+  { id:4, name:"Administratief", sub:"reken- en parameter", count:"twee maatregelen" },
+];
+
+const M = [
+  { n:1, c:1, title:"Splitsingsfactor", sub:"school / opleiding / vak", code:"S2.2.1 / S2.2.4 / S2.2.5", draft:false,
+    wat:"Het getal dat bepaalt bij hoeveel leerlingen Foleta een opleiding of leerjaar in een extra groep opsplitst. Je vindt het terug in scherm S2.2.4 (Opleidingen) in de kolom \u201cSpl. fac.\u201d.",
+    effect:"Het aantal groepen bepaalt direct hoeveel lessen er gegeven moeten worden, en lessen zijn de grootste kostenpost. Een hogere splitsingsfactor laat meer leerlingen in \u00e9\u00e9n groep toe, waardoor er minder groepen, en dus minder lessen, ontstaan. Foleta rekent dat meteen door in het benodigd-overzicht (S2.4.2).",
+    calc:"150 leerlingen bij splitsingsfactor 25 \u2192 6 groepen. Bij 30 \u2192 5 groepen. Dat scheelt een volledige groep aan lesuren voor elk vak in dat leerjaar.",
+    afweging:"Lichte ingreep qua handeling (\u00e9\u00e9n parameter), maar wel voelbaar in het primaire proces: grotere groepen raken leerlingen en docenten. Kan per niveau worden ingesteld: ruimer bij theorievakken, krapper bij praktijk- of examenvakken." },
+
+  { n:2, c:1, title:"Groepen samenvoegen", sub:"kleine groepen", code:"S2.2.6", draft:true,
+    wat:"Kleine groepen binnen een opleiding of leerjaar combineren tot \u00e9\u00e9n grotere groep, ingesteld in S2.2.6.",
+    effect:"Twee halfvolle groepen die samen \u00e9\u00e9n groep worden, halveren het aantal lesuren voor dat onderdeel. Vooral effectief bij keuzevakken of kleine profielen met lage bezetting.",
+    calc:"Twee groepen van 12 leerlingen samenvoegen tot \u00e9\u00e9n groep van 24 \u2192 de helft van de lesuren voor dat vak vervalt.",
+    afweging:"Bespaart direct lesuren, maar kan roostertechnisch lastig zijn (clusters, niveauverschillen) en raakt de onderwijskwaliteit bij grote niveauverschillen binnen de groep." },
+
+  { n:3, c:1, title:"Lessentabel beperken", sub:"bij kleine groepen", code:"S2.2.5", draft:true,
+    wat:"Het aantal lesuren per vak in de lessentabel verlagen, bijvoorbeeld specifiek voor kleine groepen, ingesteld in S2.2.5.",
+    effect:"Minder contacturen per vak betekent minder benodigde lesuren en dus minder fte. Het effect is recht evenredig met het aantal geschrapte uren \u00e9n het aantal groepen dat het vak volgt.",
+    calc:"Een vak van 3 naar 2 uur per week over 6 groepen \u2192 6 lesuren minder per week op het rooster.",
+    afweging:"Raakt direct het onderwijsaanbod en valt onder de onderwijstijd-eisen. Een onderwijskundige keuze, geen pure rekenmaatregel, maar vraagt afstemming met de eisen rond onderwijstijd." },
+
+  { n:13, c:1, title:"Contactmomenten verminderen", sub:"stages, keuzewerktijd, hoorcolleges, surveillance", code:"-", draft:true,
+    wat:"Reguliere lessen vervangen door onderwijsvormen die minder docentinzet vragen: stages, keuzewerktijd, hoorcolleges aan grote groepen, of surveillance bij zelfstandig werken.",
+    effect:"Deze vormen vragen minder docenturen per leerling dan klassikaal lesgeven. Een hoorcollege voor 90 leerlingen kost \u00e9\u00e9n docent in plaats van drie parallelle klassen; stage-uren vragen begeleiding in plaats van lesgeven.",
+    calc:"Drie parallelle klassen van 30 \u2192 \u00e9\u00e9n hoorcollege van 90: van 3 docenturen naar 1 per moment.",
+    afweging:"Het meest ingrijpend qua onderwijskundig herontwerp van dit cluster. Vraagt een doordachte didactische visie en goede randvoorwaarden (ruimte, begeleiding), maar kan fors schelen in formatie." },
+
+  { n:4, c:2, title:"Opslagfactor voor- en nawerk", sub:"per les", code:"S2.2.1 / S2.2.3 / S3.1.3", draft:false,
+    wat:"Het opslagpercentage bovenop elk lesuur voor voorbereiding en nakijkwerk. Kan per vak verschillen en wordt ingesteld in S2.2.1/S2.2.3, met toedeling in S3.1.3.",
+    effect:"De opslag vermenigvuldigt elk lesuur. Over alle lessen heen tikt een paar procent verlaging stevig aan in het totaal benodigde fte. Omdat het op \u00e1lle lessen werkt, is het hefboomeffect groot.",
+    calc:"Opslag van 45% naar 40% op een lessenpakket van bijvoorbeeld 1000 uur \u2192 50 uur minder voor- en nawerk.",
+    afweging:"Een parameter-ingreep die het onderwijs zelf niet raakt, maar wel de werkdruk van docenten: minder erkende tijd voor voorbereiding en nakijken. CAO- en taakbeleid-gevoelig." },
+
+  { n:5, c:2, title:"Deskundigheidsbevordering", sub:"professionaliseringsuren", code:"S2.2.2", draft:true,
+    wat:"De uren die per medewerker of schoolbreed gereserveerd zijn voor professionalisering en scholing, ingesteld in S2.2.2.",
+    effect:"Deze uren tellen mee als taakuren in het benodigd-overzicht. Lager begroten verlaagt direct het benodigde fte voor dit onderdeel.",
+    calc:"Van 50 naar 40 uur per fte over 60 fte \u2192 600 uur minder, ruwweg 0,4 fte.",
+    afweging:"Verlaagt de geboekte professionaliseringsruimte en raakt ontwikkeling van personeel en is vaak CAO-/medezeggenschap-gevoelig. Eerder een begrotingskeuze dan een onderwijsingreep." },
+
+  { n:6, c:2, title:"Schooltaken", sub:"algemene taken", code:"S2.2.2", draft:true,
+    wat:"De algemene schooltaken (commissies, mentoraat, organisatie) die als taakuren in de formatie staan, beheerd in S2.2.2. Sommige uren zijn vast, andere afhankelijk van de netto werktijdfactor.",
+    effect:"De totale takenlijst is volgens de documentatie meestal te groot. Schrappen of versoberen van taakuren verlaagt het benodigde fte direct. De takenlijst en kosten zijn zichtbaar in S4.1.8.",
+    calc:"Een takenpakket van 1250 uur terugbrengen naar 1100 uur \u2192 150 uur minder, ruwweg 0,1 fte.",
+    afweging:"Vraagt een kritische blik op welke taken echt nodig zijn. Kan werkdruk verlagen \u00e9n geld besparen, maar vraagt heldere keuzes over wat niet meer gedaan wordt." },
+
+  { n:8, c:2, title:"Aantal taken beperken", sub:"minder taken in de lijst", code:"S1.1.6", draft:true,
+    wat:"Het aantal verschillende taken dat in de takenlijst is aangemaakt verkleinen, beheerd in S1.1.6.",
+    effect:"Minder taken in de lijst betekent minder toegekende taakuren in totaal. Werkt samen met maatregel 6 en 9 om de takenlijst beheersbaar en betaalbaar te houden.",
+    calc:"Het schrappen van taken die samen 200 uur beslaan \u2192 ruwweg 0,14 fte minder.",
+    afweging:"Dwingt tot prioriteren: welke taken voegen genoeg waarde toe? Een organisatorische opschoning die ook duidelijkheid geeft over rollen." },
+
+  { n:9, c:2, title:"Uren per taak verlagen", sub:"normering aanscherpen", code:"S2.2.8", draft:true,
+    wat:"De urennorm per individuele taak verlagen (hoeveel uur staat er voor een bepaalde taak), ingesteld via de koppeling van taken aan taakgroepen in S2.2.8.",
+    effect:"Een lagere norm per taak verlaagt het totaal aan taakuren zonder taken te schrappen. Fijnmaziger dan maatregel 8: je houdt de taak, maar normeert hem strakker.",
+    calc:"Een taak van 50 naar 40 uur over 10 keer toegekend \u2192 100 uur minder.",
+    afweging:"Vraagt onderbouwing dat de taak realistisch in minder tijd kan, anders verschuift werkdruk naar onzichtbare uren. Taakbeleid- en medezeggenschap-gevoelig." },
+
+  { n:16, c:2, title:"Weken taakbeleid beperken", sub:"normjaartaak-weken", code:"S2.2.1", draft:true,
+    wat:"Het aantal weken waarover het taakbeleid wordt berekend in de normjaartaak, ingesteld in S2.2.1.",
+    effect:"Het aantal weken be\u00efnvloedt de optelsom van beschikbare en benodigde uren in de jaartaak. Aanpassing werkt door in de hele taakberekening.",
+    calc:"Een verschuiving van enkele weken werkt door in alle taak- en lesuren die over die weken worden uitgesmeerd.",
+    afweging:"Technisch van aard, maar raakt de kern van het taakbeleid en de normjaartaak, en is sterk CAO- en medezeggenschap-gebonden. Zorgvuldig en in overleg toepassen." },
+
+  { n:10, c:3, title:"Taken naar OOP", sub:"decaan e.d.", code:"-", draft:true,
+    wat:"Taken die nu door docenten (OP) worden gedaan beleggen bij onderwijsondersteunend personeel (OOP), bijvoorbeeld een decaan- of organisatietaak.",
+    effect:"Het werk verdwijnt niet, maar verschuift naar een functiecategorie buiten de docent-formatie en doorgaans tegen lagere kosten. Zichtbaar in de formatie-tabbladen OOP versus OP (S2.4.2).",
+    calc:"Een decaantaak van 0,2 fte verschuift van de OP-formatie naar de OOP-formatie, vaak tegen een lager uurtarief.",
+    afweging:"Een herontwerp-keuze, geen pure bezuiniging: het kost nog steeds geld, maar ontlast de schaarse docent-formatie en zet werk bij wie er beter voor gepositioneerd is." },
+
+  { n:11, c:3, title:"Lessen door directie", sub:"deel inzetten", code:"-", draft:true,
+    wat:"Een deel van de lessen laten verzorgen door directieleden die lesbevoegd zijn.",
+    effect:"Lessen die anders extra docent-fte vragen, worden opgevangen binnen bestaande directie-aanstellingen. Verlaagt de benodigde OP-formatie.",
+    calc:"Een directielid dat 4 lesuren per week geeft \u2192 ruwweg 0,15 fte minder benodigde docent-inzet.",
+    afweging:"Beperkt schaalbaar (directietijd is ook schaars), maar nuttig om pieken op te vangen. Houd de hoofdtaak van de directie in het oog." },
+
+  { n:12, c:3, title:"Lessen door OOP", sub:"deel inzetten", code:"-", draft:true,
+    wat:"Bepaalde lessen of begeleidingsmomenten laten verzorgen door OOP'ers die daarvoor gekwalificeerd zijn (bijvoorbeeld onderwijsassistenten bij zelfstandig werken).",
+    effect:"Verschuift inzet van dure docent-fte naar OOP-formatie. Vooral kansrijk bij begeleidings- en oefenmomenten die geen volledige lesbevoegdheid vragen.",
+    calc:"Begeleide studie-uren door een onderwijsassistent in plaats van een docent \u2192 lagere kosten per uur en minder docent-fte.",
+    afweging:"Vraagt heldere afbakening van wat OOP wel en niet mag doen (bevoegdheden, toezicht). Kan kwaliteit en kosten allebei verbeteren bij de juiste inzet." },
+
+  { n:14, c:3, title:"Taken splitsen", sub:"in kleinere eenheden", code:"-", draft:true,
+    wat:"Grote taken opdelen in kleinere eenheden die over meer mensen, of over OOP, verdeeld kunnen worden.",
+    effect:"Door taken te splitsen kun je het uitvoerende deel beleggen bij goedkopere of beschikbare capaciteit, terwijl alleen de regie bij de docent blijft. Verschuift uren weg van de docent-formatie.",
+    calc:"Een organisatietaak van 80 uur opsplitsen: 20 uur regie bij OP, 60 uur uitvoering bij OOP.",
+    afweging:"Een herontwerp-keuze die werk slimmer verdeelt in plaats van schrapt. Vraagt goede co\u00f6rdinatie zodat het splitsen niet juist extra afstemming kost." },
+
+  { n:7, c:4, title:"Tijdelijke situaties", sub:"uitbreiding / verlof uitsluiten", code:"S2.1.1", draft:true,
+    wat:"Tijdelijke aanstellingsuitbreidingen of verlofsituaties niet meerekenen in de structurele benodigde formatie, ingesteld in S2.1.1.",
+    effect:"Door tijdelijke posten buiten de structurele berekening te houden, geeft het formatie-overzicht een zuiverder beeld van de vaste benodigde formatie. Geen inhoudelijke verandering, alleen wat je wel en niet meetelt.",
+    calc:"Een tijdelijke uitbreiding van 0,4 fte voor \u00e9\u00e9n jaar telt niet mee in de structurele benodigde formatie.",
+    afweging:"Puur administratief: het verandert geen werk, alleen de telling. Belangrijk dat de afspraken over wat \u2018tijdelijk\u2019 is helder en consistent zijn." },
+
+  { n:15, c:4, title:"Geen vaste lesvermindering", sub:"Foleta rekent automatisch", code:"-", draft:true,
+    wat:"Geen vaste, met de hand ingevoerde lesvermindering opnemen, maar Foleta de vermindering automatisch laten doorrekenen op basis van de werkelijke inzet.",
+    effect:"Door de berekening aan het systeem over te laten, voorkom je dat handmatige correcties stapelen of dubbel tellen. Het benodigde fte volgt dan exact uit de werkelijke lessen en taken.",
+    calc:"In plaats van een vaste aftrek per docent rekent Foleta de vermindering door uit de feitelijke toedeling, nauwkeuriger en zonder dubbeltellingen.",
+    afweging:"Een reken-/registratiekeuze zonder gevolg voor het onderwijs. Zorgt voor een zuiverder en beter controleerbaar overzicht; vraagt wel dat de inrichting klopt." },
+];
+
+const board = document.getElementById('board');
+CLUSTERS.forEach(cl => {
+  const col = document.createElement('div');
+  col.className = 'cluster c' + cl.id;
+  col.id = 'cluster-' + cl.id;
+  col.innerHTML = `
+    <div class="cluster-head">
+      <h2><span class="num">${cl.id}</span>${cl.name}</h2>
+      <div class="sub">${cl.sub}</div>
+      <div class="count">${cl.count}</div>
+    </div>
+    <div class="measures" id="cl-${cl.id}"></div>`;
+  board.appendChild(col);
+});
+
+M.forEach(m => {
+  const host = document.getElementById('cl-' + m.c);
+  const btn = document.createElement('button');
+  btn.className = 'measure';
+  btn.setAttribute('aria-haspopup', 'dialog');
+  btn.innerHTML = `
+    <div class="m-title"><span class="m-num">${m.n}.</span>${m.title}</div>
+    <div class="m-sub">${m.sub}</div>
+    ${m.code !== '-' ? `<div class="m-code">${m.code}</div>` : ''}`;
+  btn.addEventListener('click', () => openPanel(m));
+  host.appendChild(btn);
+});
+
+const overlay = document.getElementById('overlay');
+const panel = document.getElementById('panel');
+
+function openPanel(m) {
+  const cl = CLUSTERS.find(c => c.id === m.c);
+  panel.innerHTML = `
+    <div class="panel-head ph${m.c}">
+      <div class="p-cluster pc${m.c}">${cl.name} &middot; maatregel ${m.n}</div>
+      <h3 id="p-title">${m.title}</h3>
+      ${m.code !== '-' ? `<div class="p-code">Foleta-scherm: ${m.code}</div>` : ''}
+      <button class="close" aria-label="Sluiten" onclick="closePanel()">&times;</button>
+    </div>
+    <div class="panel-body">
+      <div class="field"><h4>Wat het is</h4><p>${m.wat}</p></div>
+      <div class="field"><h4>Hoe je hiermee formatie vrijspeelt</h4><p>${m.effect}</p></div>
+      <div class="field calc"><h4>Rekenvoorbeeld</h4><p>${m.calc}</p></div>
+      <div class="field"><h4>Afweging voor het gesprek</h4><p>${m.afweging}</p></div>
+    </div>`;
+  overlay.classList.add('open');
+  document.body.style.overflow = 'hidden';
+  panel.querySelector('.close').focus();
+}
+function closePanel() {
+  overlay.classList.remove('open');
+  document.body.style.overflow = '';
+}
+overlay.addEventListener('click', e => { if (e.target === overlay) closePanel(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closePanel(); });
+</script>
+</body>
+</html>
